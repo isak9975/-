@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 필드명, 값 수정-->
+<!-- 유효성 검사 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- mapper 와 매핑할 sql 작성-->
+<mapper namespace="project.model.mapper.BoardMapper">
+    <!-- 게시물 등록 -->
+    <insert id="boardWrite">
+        insert into boards (btitle, bcontent, mno, memail, cno, cdate, mdate)
+            values (#{btitle}, #{bcontent}, #{mno}, #{memail}, #{cno},now(),now())
+    </insert>
+
+    <!-- 게시물 전체 조회 -->
+    <select id="boardFindAll">
+        SELECT b.*, c.cname
+        FROM boards b
+        LEFT JOIN category c ON b.cno = c.cno
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (btitle LIKE CONCAT('%', #{keyword}, '%') OR bcontent LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="cno != null">
+            AND cno = #{cno}
+        </if>
+        ORDER BY cdate DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 게시글 개수 조회 -->
+    <select id="countBoards">
+        SELECT count(*)
+        FROM boards
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (btitle LIKE CONCAT('%', #{keyword}, '%') OR bcontent LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="cno != null">
+            AND cno = #{cno}
+        </if>
+    </select>
+
+    <!-- 게시물 개별 조회 -->
+    <select id="boardFind">
+        SELECT b.*, c.cname
+        FROM boards b
+        LEFT JOIN category c ON b.cno = c.cno
+        WHERE b.bno = #{bno}
+    </select>
+
+    <!-- 게시물 수정 -->
+    <update id="boardUpdate">
+        update boards set btitle = #{btitle}, bcontent = #{bcontent} where bno = #{bno}
+    </update>
+
+    <!-- 게시물 삭제 -->
+    <delete id="boardDelete">
+        delete from boards where bno = #{bno}
+    </delete>
+
+    <!-- 댓글 쓰기 -->
+    <insert id="replyWrite">
+        insert into replies (rno, memail, rcontent, bno, cdate) values (#{rno}, #{memail}, #{rcontent}, #{bno}, now())
+    </insert>
+
+    <!-- 게시글 별 댓글 조회 -->
+    <select id="replyFindAll">
+        select* from replies where bno = #{bno}
+        order by cdate desc
+    </select>
+</mapper>
